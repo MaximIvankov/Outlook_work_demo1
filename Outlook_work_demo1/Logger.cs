@@ -11,7 +11,7 @@ namespace Outlook_work_demo1
     internal static class Logger
     {
         private static BlockingCollection<string> _blockingCollection;
-        private static string _filename = @"C:\tkM\Logs\logAppOut.txt";
+        private static string _filename = $@"C:\tkM\Logs\logAppOut_{DateTime.Now.ToString()}.txt";
         private static Task _task;
 
         static Logger()
@@ -41,6 +41,24 @@ namespace Outlook_work_demo1
         {
             _blockingCollection.CompleteAdding();
             _task.Wait();
+        }
+
+        public static void Run_()
+        {
+
+            _blockingCollection = new BlockingCollection<string>();
+
+            _task = Task.Factory.StartNew(() =>
+            {
+                using (var streamWriter = new StreamWriter(_filename, true, Encoding.UTF8))
+                {
+                    streamWriter.AutoFlush = true;
+
+                    foreach (var s in _blockingCollection.GetConsumingEnumerable())
+                        streamWriter.WriteLine(s);
+                }
+            },
+            TaskCreationOptions.LongRunning);
         }
     }
 }
